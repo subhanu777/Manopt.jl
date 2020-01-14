@@ -17,14 +17,14 @@ TolVibrantMagenta = RGBA{Float64}(colorant&quot;#EE3377&quot;)</code></pre><p>Th
 )</code></pre><p><img src="../../assets/images/tutorials/startDataAndCenter.png" alt="The data of noisy versions of \$x\$"/></p><h2><a class="nav-anchor" id="Computing-the-Mean-1" href="#Computing-the-Mean-1">Computing the Mean</a></h2><p>To compute the mean on the manifold we use the characterization, that the Euclidean mean minimizes the sum of squared distances, and end up with the following cost function. Its minimizer is called <a href="https://arxiv.org/abs/1407.2087">Riemannian Center of Mass</a>.</p><pre><code class="language-julia">F = y -&gt; sum(1/(2*n) * distance.(Ref(M),Ref(y),data).^2)
 ∇F = y -&gt; sum(1/n*gradDistance.(Ref(M),data,Ref(y)))</code></pre><p>note that the <a href="../../functions/gradients/#Manopt.gradDistance"><code>gradDistance</code></a> defaults to the case <code>p=2</code>, i.e. the gradient of the squared distance. For details on convergence of the gradient descent for this problem, see [<a href="#AfsariTronVidal2013">Afsari, Tron, Vidal, 2013</a>]</p><p>The easiest way to call the gradient descent is now to call <a href="../../solvers/gradientDescent/#Manopt.steepestDescent"><code>steepestDescent</code></a></p><pre><code class="language-julia">xMean = steepestDescent(M,F,∇F,data[1])</code></pre><p>but in order to get more details, we further add the <code>debug=</code> options, which act as a <a href="https://en.wikipedia.org/wiki/Decorator_pattern">decorator pattern</a> using the <a href="../../plans/#Manopt.DebugOptions"><code>DebugOptions</code></a> and <a href="../../plans/#Manopt.DebugAction"><code>DebugAction</code></a>s. The latter store values if that&#39;s necessary, for example for the <a href="../../plans/#Manopt.DebugChange"><code>DebugChange</code></a> that prints the change during the last iteration. The following debug prints</p><p><code># i | x: | Last Change: | F(x):</code>`</p><p>as well as the reason why the algorithm stopped at the end. Here, the format shorthand and the [<code>DebugFactory</code>] are used, which returns a <a href="../../plans/#Manopt.DebugGroup"><code>DebugGroup</code></a> of <a href="../../plans/#Manopt.DebugAction"><code>DebugAction</code></a> performed each iteration and the stop, respectively.</p><pre><code class="language-julia">xMean = steepestDescent(M,F,∇F,data[1];
    debug = [:Iteration,&quot; | &quot;, :x, &quot; | &quot;, :Change, &quot; | &quot;, :Cost, &quot;\n&quot;, :Stop]
-)</code></pre><pre><code class="language-none">Initial | x: Sn([0.573734, -0.172865, 0.800592]) |  | F(x): 0.22606088442202962
-# 1 | x: Sn([0.782389, 0.085569, 0.616884]) | Last Change: 0.38188652881305785 | F(x): 0.14924728281088762
-# 2 | x: Sn([0.791738, 0.0972092, 0.603077]) | Last Change: 0.020335997468975846 | F(x): 0.14902948995714208
-# 3 | x: Sn([0.792283, 0.097716, 0.602278]) | Last Change: 0.001092107177198496 | F(x): 0.1490288608629298
-# 4 | x: Sn([0.792316, 0.0977379, 0.602232]) | Last Change: 6.034189486653822e-5 | F(x): 0.14902885894006088
-# 5 | x: Sn([0.792317, 0.0977388, 0.602229]) | Last Change: 3.405428846127275e-6 | F(x): 0.14902885893393106
-# 6 | x: Sn([0.792318, 0.0977389, 0.602229]) | Last Change: 1.9428737179048833e-7 | F(x): 0.149028858933911
-# 7 | x: Sn([0.792318, 0.0977389, 0.602229]) | Last Change: 0.0 | F(x): 0.1490288589339109
+)</code></pre><pre><code class="language-none">Initial | x: Sn([0.5737338264338114, -0.17286515131186522, 0.8005917410687817]) |  | F(x): 0.22606088442202962
+# 1 | x: Sn([0.7823885991620455, 0.08556904440746381, 0.6168841208366818]) | Last Change: 0.38188652881305785 | F(x): 0.14924728281088762
+# 2 | x: Sn([0.7917377109136624, 0.09720922045898242, 0.6030769143110611]) | Last Change: 0.020335997468975846 | F(x): 0.14902948995714208
+# 3 | x: Sn([0.792283271084327, 0.09771599132874592, 0.6022780117176447]) | Last Change: 0.001092107177198496 | F(x): 0.1490288608629298
+# 4 | x: Sn([0.7923155575566625, 0.0977379000751398, 0.6022319819991107]) | Last Change: 6.034189486653822e-5 | F(x): 0.14902885894006088
+# 5 | x: Sn([0.79231746502594, 0.09773883592992512, 0.602229320579737]) | Last Change: 3.405428846127275e-6 | F(x): 0.14902885893393106
+# 6 | x: Sn([0.7923175775065071, 0.09773887521445886, 0.6022291662199969]) | Last Change: 1.9428737179048833e-7 | F(x): 0.149028858933911
+# 7 | x: Sn([0.7923175841297171, 0.09773887682107822, 0.6022291572454815]) | Last Change: 0.0 | F(x): 0.1490288589339109
 The algorithm reached approximately critical point; the gradient norm (6.549990973843524e-10) is less than 1.0e-8.</code></pre><pre><code class="language-julia">renderAsymptote(&quot;startDataCenterMean.asy&quot;,asyExportS2Signals;
     render = asyResolution,
     points = [ [x], data, [xMean] ],
@@ -37,23 +37,23 @@ proxes = Function[ (λ,y) -&gt; proxDistance(M,λ/n,di,y,1) for di in data ]</co
     returnOptions = true
 )
 xMedian = getSolverResult(o)
-values = getRecord(o)</code></pre><pre><code class="language-none">Initial | x: Sn([0.573734, -0.172865, 0.800592]) |  | F(x): 0.29868007928810264
-# 50 | x: Sn([0.790207, 0.0790575, 0.607719]) | Last Change: 0.024872284599065892 | F(x): 0.24545404985253558
-# 100 | x: Sn([0.790176, 0.0789142, 0.607778]) | Last Change: 0.00015168198899823736 | F(x): 0.2454540249491582
-# 150 | x: Sn([0.790164, 0.0788666, 0.6078]) | Last Change: 5.23856377841844e-5 | F(x): 0.24545402020641968
-# 200 | x: Sn([0.790157, 0.0788428, 0.607812]) | Last Change: 2.6487672240370526e-5 | F(x): 0.24545401853477888
-# 250 | x: Sn([0.790153, 0.0788287, 0.607819]) | Last Change: 1.597551121821253e-5 | F(x): 0.24545401775904627
-# 300 | x: Sn([0.790151, 0.0788192, 0.607824]) | Last Change: 1.0681066695042033e-5 | F(x): 0.24545401733720773
-# 350 | x: Sn([0.790149, 0.0788125, 0.607827]) | Last Change: 7.642872252139065e-6 | F(x): 0.24545401708274203
-# 400 | x: Sn([0.790147, 0.0788075, 0.60783]) | Last Change: 5.73880456603777e-6 | F(x): 0.2454540169175623
-# 450 | x: Sn([0.790146, 0.0788035, 0.607832]) | Last Change: 4.4670937532181725e-6 | F(x): 0.24545401680431822
-# 500 | x: Sn([0.790145, 0.0788004, 0.607833]) | Last Change: 3.5757198493180048e-6 | F(x): 0.24545401672332384
-# 550 | x: Sn([0.790144, 0.0787979, 0.607835]) | Last Change: 2.926741314875479e-6 | F(x): 0.24545401666340602
-# 600 | x: Sn([0.790144, 0.0787957, 0.607836]) | Last Change: 2.439789287793762e-6 | F(x): 0.24545401661784125
-# 650 | x: Sn([0.790143, 0.0787939, 0.607837]) | Last Change: 2.06492676586287e-6 | F(x): 0.24545401658238772
-# 700 | x: Sn([0.790143, 0.0787924, 0.607838]) | Last Change: 1.7702303548713047e-6 | F(x): 0.2454540165542612
-# 750 | x: Sn([0.790142, 0.0787911, 0.607838]) | Last Change: 1.5343131692766127e-6 | F(x): 0.2454540165315743
-# 800 | x: Sn([0.790142, 0.0787899, 0.607839]) | Last Change: 1.342759171255786e-6 | F(x): 0.24545401651300994
+values = getRecord(o)</code></pre><pre><code class="language-none">Initial | x: Sn([0.5737338264338114, -0.17286515131186522, 0.8005917410687817]) |  | F(x): 0.29868007928810264
+# 50 | x: Sn([0.7902068927064384, 0.07905752387374188, 0.6077194868014257]) | Last Change: 0.024872284599065892 | F(x): 0.24545404985253558
+# 100 | x: Sn([0.7901763339094678, 0.07891420169780099, 0.6077778460093722]) | Last Change: 0.00015168198899823736 | F(x): 0.2454540249491582
+# 150 | x: Sn([0.7901640149475095, 0.07886656476881941, 0.6078000447874266]) | Last Change: 5.23856377841844e-5 | F(x): 0.24545402020641968
+# 200 | x: Sn([0.7901574583210484, 0.07884284499708583, 0.6078116458676868]) | Last Change: 2.6487672240370526e-5 | F(x): 0.24545401853477888
+# 250 | x: Sn([0.7901533992744378, 0.07882865828353179, 0.6078187626655407]) | Last Change: 1.597551121821253e-5 | F(x): 0.24545401775904627
+# 300 | x: Sn([0.7901506420043442, 0.07881922329299917, 0.607823570602203]) | Last Change: 1.0681066695042033e-5 | F(x): 0.24545401733720773
+# 350 | x: Sn([0.7901486478380554, 0.07881249671096521, 0.6078270351686217]) | Last Change: 7.642872252139065e-6 | F(x): 0.24545401708274203
+# 400 | x: Sn([0.7901471389219392, 0.0788074593967528, 0.6078296498172023]) | Last Change: 5.73880456603777e-6 | F(x): 0.2454540169175623
+# 450 | x: Sn([0.7901459575601557, 0.07880354634232323, 0.6078316928519094]) | Last Change: 4.4670937532181725e-6 | F(x): 0.24545401680431822
+# 500 | x: Sn([0.7901450076500379, 0.07880041914367038, 0.6078333331008621]) | Last Change: 3.5757198493180048e-6 | F(x): 0.24545401672332384
+# 550 | x: Sn([0.790144227305975, 0.07879786277991105, 0.6078346789023823]) | Last Change: 2.926741314875479e-6 | F(x): 0.24545401666340602
+# 600 | x: Sn([0.7901435748845504, 0.07879573409228191, 0.6078358029579382]) | Last Change: 2.439789287793762e-6 | F(x): 0.24545401661784125
+# 650 | x: Sn([0.7901430213382369, 0.0787939340847595, 0.6078367558661857]) | Last Change: 2.06492676586287e-6 | F(x): 0.24545401658238772
+# 700 | x: Sn([0.7901425457901493, 0.07879239211753257, 0.6078375739263401]) | Last Change: 1.7702303548713047e-6 | F(x): 0.2454540165542612
+# 750 | x: Sn([0.7901421328511954, 0.07879105643470423, 0.6078382838545687]) | Last Change: 1.5343131692766127e-6 | F(x): 0.2454540165315743
+# 800 | x: Sn([0.7901417709288321, 0.07878988825061885, 0.6078389057496272]) | Last Change: 1.342759171255786e-6 | F(x): 0.24545401651300994
 The algorithm performed a step with a change (0.0) less than 1.0e-12.</code></pre><p>where the differences to <a href="../../solvers/gradientDescent/#Manopt.steepestDescent"><code>steepestDescent</code></a> are as follows</p><ul><li>the third parameter is now an Array of proximal maps</li><li>debug is reduces to only every 50th iteration</li><li>we further activated a <a href="../../plans/#Manopt.RecordAction"><code>RecordAction</code></a> using the <code>record=</code> optional parameter. These work very similar to those in debug, but they collect their data in an array. The high level interface then returns two variables; the <code>values</code> do contain an array of recorded datum per iteration. Here a Tuple containing the iteration, last change and cost respectively; see <a href="../../plans/#Manopt.RecordGroup"><code>RecordGroup</code></a>, <a href="../../plans/#Manopt.RecordIteration"><code>RecordIteration</code></a>, <a href="../../plans/#Manopt.RecordChange"><code>RecordChange</code></a>, <a href="../../plans/#Manopt.RecordCost"><code>RecordCost</code></a> as well as the <a href="../../plans/#Manopt.RecordFactory-Union{Tuple{O}, Tuple{O,Array{#s12,1} where #s12}} where O&lt;:Options"><code>RecordFactory</code></a> for details. The <code>values</code> contains hence a tuple per iteration, that itself consists of (by order of specification) the iteration number, the last change and the cost function value.</li></ul><p>These recorded entries read</p><pre><code class="language-julia">values</code></pre><pre><code class="language-none">819-element Array{Tuple{Int64,Float64,Float64},1}:
  (1, 0.3623800525332345, 0.24564104473275306)     
  (2, 0.018093060506321777, 0.24547241697343178)   
