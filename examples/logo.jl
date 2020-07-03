@@ -1,9 +1,9 @@
 using Manopt, Manifolds, Makie, Colors, LinearAlgebra, ColorSchemes
 #
 # Settings
-n_lon = 201
-n_lat = 101
-lat = range(-π/2, π/2; length=n_lat)
+n_lon = 401
+n_lat = 201
+lat = range(0, π; length=n_lat)
 lon = range(-π, π; length=n_lon)
 #
 # Colors
@@ -31,5 +31,4 @@ data = [F(spherical_to_euclidean(θ,φ)) for θ ∈ lat, φ ∈ lon]
 manopt_pre_scheme = ColorScheme([sphere_color,plane_color], "Manopt", "The Sphere color Scheme for the Manopt Logo")
 manopt_scheme = ColorScheme([get(manopt_pre_scheme, i) for i in 0.0:0.01:1.0], "Manopt", "The Sphere color Scheme for the Manopt Logo")
 
-# mesh(Makie.Sphere(Point3f0(0), 1f0), color=data, colormap = manopt_pre_scheme, levels=5, interpolate=false)
-contour3d(lat, lon, data, levels = 11, color = :black, linewidth = 3)
+mesh(Makie.Sphere(Point3f0(0), 1f0), color=data, colormap = manopt_pre_scheme, levels=5, interpolate=false)
