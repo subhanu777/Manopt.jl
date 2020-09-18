@@ -41,16 +41,17 @@ geoPts_yncn = shortest_geodesic(M, rn, cn, T)</code></pre><p>and obtain the new 
     ),
     dotSize = 3.5, lineWidth = 0.75, cameraPosition = (1.2,1.,.5)
 )
-render_asymptote(&quot;SecondOrderMin1.asy&quot;; render=2)</code></pre><pre><code class="language-julia">#md</code></pre><p><img src="../assets/images/tutorials/SecondOrderMin1.png" alt="A gradient Step"/></p><p>One can see, that this step slightly “overshoots”, i.e. <span>$r$</span> is now even below <span>$c$</span>. and the cost function is still at</p><pre><code class="language-julia">costTV2(M, (pn, rn, qn))</code></pre><pre><code class="language-none">0.46579428818288565</code></pre><p>But we can also search for the best step size using <a href="../plans/index.html#Manopt.ArmijoLinesearch"><code>ArmijoLinesearch</code></a> on the <code>PowerManifold</code> manifold <span>$\mathcal N = \mathcal M^3 = (\mathbb S^2)^3$</span></p><pre><code class="language-julia">x = [p, r, q]
+render_asymptote(&quot;SecondOrderMin1.asy&quot;; render=2)</code></pre><pre><code class="language-julia">#md</code></pre><p><img src="../assets/images/tutorials/SecondOrderMin1.png" alt="A gradient Step"/></p><p>One can see, that this step slightly “overshoots”, i.e. <span>$r$</span> is now even below <span>$c$</span>. and the cost function is still at</p><pre><code class="language-julia">costTV2(M, (pn, rn, qn))</code></pre><pre><code class="language-none">0.46579428818288593</code></pre><p>But we can also search for the best step size using <a href="../plans/index.html#Manopt.ArmijoLinesearch"><code>ArmijoLinesearch</code></a> on the <code>PowerManifold</code> manifold <span>$\mathcal N = \mathcal M^3 = (\mathbb S^2)^3$</span></p><pre><code class="language-">x = [p, r, q]
 N = PowerManifold(M, NestedPowerRepresentation(), 3)
 s = ArmijoLinesearch(1.0, ExponentialRetraction(), 0.999, 0.96)(
     N,
     x,
     x -&gt; costTV2(M, Tuple(x)),
     [∇TV2(M, (p, r, q))...],  # transform from tuple to PowTVector
-)</code></pre><pre><code class="language-none">0.7348020742679654</code></pre><p>and for the new points</p><pre><code class="language-julia">pm, rm, qm = exp.(Ref(M), [p, r, q], s * [-Xp, -Xr, -Xq])
+)</code></pre><p>and for the new points</p><pre><code class="language-">pm, rm, qm = exp.(Ref(M), [p, r, q], s * [-Xp, -Xr, -Xq])
 cm = mid_point(M, pm, qm)
-geoPts_xmzm = shortest_geodesic(M, pm, qm, T)</code></pre><p>we obtain again with</p><pre><code class="language-julia">asymptote_export_S2_signals(&quot;SecondOrderMin2.asy&quot;;
+geoPts_xmzm = shortest_geodesic(M, pm, qm, T)
+nothing #hide</code></pre><p>we obtain again with</p><pre><code class="language-julia">asymptote_export_S2_signals(&quot;SecondOrderMin2.asy&quot;;
     points = [ [x,y,z], [c,c2,cm], [xm,ym,zm] ],
     curves = [ geoPts_xmzm ] ,
     tVectors = [Tuple.( [-ξx, -ξy, -ξz], [x, y, z] )],
@@ -59,10 +60,10 @@ geoPts_xmzm = shortest_geodesic(M, pm, qm, T)</code></pre><p>we obtain again wit
                 :curves =&gt; [TolVibrantTeal]
                 ),
     dotSize = 3.5, lineWidth = 0.75, cameraPosition = (1.2,1.,.5)
-)</code></pre><p><img src="../assets/images/tutorials/SecondOrderMin2.png" alt="A gradient Step"/></p><p>Here, the cost function yields</p><pre><code class="language-julia">costTV2(M, (pm, rm, qm))</code></pre><pre><code class="language-none">0.0012555303255725315</code></pre><p>which is nearly zero, as one can also see, since the new center <span>$c$</span> and <span>$r$</span> are quite close.</p><h2 id="Literature-1"><a class="docs-heading-anchor" href="#Literature-1">Literature</a><a class="docs-heading-anchor-permalink" href="#Literature-1" title="Permalink"></a></h2><ul>
+)</code></pre><p><img src="../assets/images/tutorials/SecondOrderMin2.png" alt="A gradient Step"/></p><p>Here, the cost function yields</p><pre><code class="language-">costTV2(M, (pm, rm, qm))</code></pre><p>which is nearly zero, as one can also see, since the new center <span>$c$</span> and <span>$r$</span> are quite close.</p><h2 id="Literature-1"><a class="docs-heading-anchor" href="#Literature-1">Literature</a><a class="docs-heading-anchor-permalink" href="#Literature-1" title="Permalink"></a></h2><ul>
 <li id="BačákBergmannSteidlWeinmann2016">[<a>Bačák, Bergmann, Steidl, Weinmann, 2016</a>]
   Bačák, M; Bergmann, R.; Steidl, G; Weinmann, A.: <emph>A second order nonsmooth
   variational model for restoring manifold-valued images.</emph>,
   SIAM Journal on Scientific Computations, Volume 38, Number 1, pp. A567–597,
   doi: <a href="https://doi.org/10.1137/15M101988X">10.1137/15M101988X</a></li>
-</ul></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="BezierCurves.html">« work with Bézier curves</a><a class="docs-footer-nextpage" href="JacobiFields.html">use Jacobi Fields »</a></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> on <span class="colophon-date" title="Monday 7 September 2020 14:00">Monday 7 September 2020</span>. Using Julia version 1.4.2.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>
+</ul></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="BezierCurves.html">« work with Bézier curves</a><a class="docs-footer-nextpage" href="JacobiFields.html">use Jacobi Fields »</a></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> on <span class="colophon-date" title="Friday 18 September 2020 17:43">Friday 18 September 2020</span>. Using Julia version 1.4.2.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>
