@@ -23,14 +23,14 @@ gradF(M, y) = sum(1 / n * grad_distance.(Ref(M), data, Ref(y)))</code></pre><p>n
     debug=[:Iteration, &quot; | &quot;, :x, &quot; | &quot;, :Change, &quot; | &quot;, :Cost, &quot;\n&quot;, :Stop],
 )</code></pre><pre><code class="language-none">Initial | x: [0.5737338264338113, -0.1728651513118652, 0.8005917410687816] |  | F(x): 0.22606088442202987
 # 1 | x: [0.7823885991620455, 0.08556904440746377, 0.6168841208366815] | Last Change: 0.0 | F(x): 0.14924728281088784
-# 2 | x: [0.7917377109136624, 0.09720922045898238, 0.603076914311061] | Last Change: 0.0 | F(x): 0.1490294899571422
+# 2 | x: [0.7917377109136624, 0.09720922045898238, 0.603076914311061] | Last Change: 0.0 | F(x): 0.14902948995714224
 # 3 | x: [0.792283271084327, 0.0977159913287459, 0.6022780117176446] | Last Change: 1.4901161193847656e-8 | F(x): 0.14902886086292993
 # 4 | x: [0.7923155575566623, 0.0977379000751398, 0.6022319819991105] | Last Change: 2.9802322387695312e-8 | F(x): 0.14902885894006118
-# 5 | x: [0.7923174650259398, 0.09773883592992506, 0.6022293205797368] | Last Change: 2.9802322387695312e-8 | F(x): 0.14902885893393145
+# 5 | x: [0.7923174650259398, 0.09773883592992508, 0.6022293205797368] | Last Change: 2.9802322387695312e-8 | F(x): 0.14902885893393145
 # 6 | x: [0.7923175775065069, 0.09773887521445883, 0.6022291662199968] | Last Change: 2.9802322387695312e-8 | F(x): 0.14902885893391132
-# 7 | x: [0.7923175841297168, 0.09773887682107818, 0.6022291572454814] | Last Change: 3.332000937312528e-8 | F(x): 0.1490288589339113
-# 8 | x: [0.792317584519285, 0.09773887688413527, 0.6022291567227154] | Last Change: 3.6500241499888574e-8 | F(x): 0.14902885893391135
-The algorithm reached approximately critical point after 8 iterations; the gradient norm (6.549992260414836e-10) is less than 1.0e-8.</code></pre><pre><code class="language-julia">asymptote_export_S2_signals(&quot;startDataCenterMean.asy&quot;;
+# 7 | x: [0.7923175841297168, 0.09773887682107817, 0.6022291572454814] | Last Change: 3.332000937312528e-8 | F(x): 0.1490288589339113
+# 8 | x: [0.792317584519285, 0.09773887688413525, 0.6022291567227154] | Last Change: 3.6500241499888574e-8 | F(x): 0.14902885893391135
+The algorithm reached approximately critical point after 8 iterations; the gradient norm (6.549992173466581e-10) is less than 1.0e-8.</code></pre><pre><code class="language-julia">asymptote_export_S2_signals(&quot;startDataCenterMean.asy&quot;;
     points = [ [x], data, [xMean] ],
     colors=Dict(:points =&gt; [TolVibrantBlue, TolVibrantTeal, TolVibrantOrange]),
     dot_size = 3.5, camera_position = (1.,.5,.5)
@@ -46,11 +46,11 @@ proxes = Function[(M, λ, y) -&gt; prox_distance(M, λ / n, di, y, 1) for di in 
     return_options=true,
 )
 xMedian = get_solver_result(o)
-values = get_record(o)</code></pre><pre><code class="language-none">Initial | x: [0.5737338264338113, -0.1728651513118652, 0.8005917410687816] |  | F(x): 0.29868007939347
+values = get_record(o)</code></pre><pre><code class="language-none">Initial | x: [0.5737338264338113, -0.1728651513118652, 0.8005917410687816] |  | F(x): 0.2986800793934701
 The algorithm performed a step with a change (0.0) less than 1.0e-12.</code></pre><p>where the differences to <a href="../solvers/gradient_descent.html#Manopt.gradient_descent"><code>gradient_descent</code></a> are as follows</p><ul><li>the third parameter is now an Array of proximal maps</li><li>debug is reduces to only every 50th iteration</li><li>we further activated a <a href="../plans/index.html#Manopt.RecordAction"><code>RecordAction</code></a> using the <code>record=</code> optional parameter. These work very similar to those in debug, but they collect their data in an array. The high level interface then returns two variables; the <code>values</code> do contain an array of recorded datum per iteration. Here a Tuple containing the iteration, last change and cost respectively; see <a href="../plans/index.html#Manopt.RecordGroup"><code>RecordGroup</code></a>, <a href="../plans/index.html#Manopt.RecordIteration"><code>RecordIteration</code></a>, <a href="../plans/index.html#Manopt.RecordChange"><code>RecordChange</code></a>, <a href="../plans/index.html#Manopt.RecordCost"><code>RecordCost</code></a> as well as the <a href="../plans/index.html#Manopt.RecordFactory-Union{Tuple{O}, Tuple{O,Array{#s12,1} where #s12}} where O&lt;:Options"><code>RecordFactory</code></a> for details. The <code>values</code> contains hence a tuple per iteration, that itself consists of (by order of specification) the iteration number, the last change and the cost function value.</li></ul><p>These recorded entries read</p><pre><code class="language-julia">values</code></pre><pre><code class="language-none">3-element Array{Tuple{Int64,Float64,Float64},1}:
- (1, 6.322027276634106e-8, 0.24765709821769374)
- (2, 7.45058059692383e-8, 0.24599998171726126)
- (3, 0.0, 0.24568197834841984)</code></pre><p>The resulting median and mean for the data hence are</p><pre><code class="language-julia">asymptote_export_S2_signals(&quot;startDataCenterMean.asy&quot;;
+ (1, 7.300048299977716e-8, 0.24765709821769438)
+ (2, 8.815645848363069e-8, 0.24599998171726192)
+ (3, 0.0, 0.24568197834842026)</code></pre><p>The resulting median and mean for the data hence are</p><pre><code class="language-julia">asymptote_export_S2_signals(&quot;startDataCenterMean.asy&quot;;
     points = [ [x], data, [xMean], [xMedian] ],
     colors=Dict(:points =&gt; [TolVibrantBlue, TolVibrantTeal, TolVibrantOrange, TolVibrantMagenta]),
     dot_size = 3.5, camera_position = (1.,.5,.5)
@@ -68,4 +68,4 @@ render_asymptote(&quot;startDataCenterMedianAndMean.asy&quot;; render = 2)</code
    pp. 2230–2260.
    doi: <a href="https://doi.org/10.1137/12086282X">10.1137/12086282X</a>,
    arxiv: <a href="https://arxiv.org/abs/1201.0925">1201.0925</a></li>
-</ul></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../about.html">« About</a><a class="docs-footer-nextpage" href="Benchmark.html">speed up! using <code>gradF!</code> »</a></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> on <span class="colophon-date" title="Thursday 25 February 2021 14:24">Thursday 25 February 2021</span>. Using Julia version 1.4.2.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>
+</ul></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../about.html">« About</a><a class="docs-footer-nextpage" href="Benchmark.html">speed up! using <code>gradF!</code> »</a></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> on <span class="colophon-date" title="Thursday 25 February 2021 15:09">Thursday 25 February 2021</span>. Using Julia version 1.4.2.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>
