@@ -137,8 +137,7 @@ R = gradient_descent(
     data[1];
     record=[:Iteration, :Count =&gt; RecordCount(), :Cost],
     return_options=true,
-)
-get_record(R)</code></pre><pre><code class="language-none">20-element Array{Tuple{Int64,Int64,Float64},1}:
+)</code></pre><pre><code class="language-none">RecordOptions{GradientDescentOptions{Array{Float64,1},Array{Float64,1},StopWhenAny{Tuple{StopAfterIteration,StopWhenGradientNormLess}},ConstantStepsize,ExponentialRetraction},NamedTuple{(:Iteration,),Tuple{RecordGroup}}}(GradientDescentOptions{Array{Float64,1},Array{Float64,1},StopWhenAny{Tuple{StopAfterIteration,StopWhenGradientNormLess}},ConstantStepsize,ExponentialRetraction}([-0.013171687776920208, -0.9988254858704124, 0.010022911212629302, 0.0013344707055430774, -0.0002677083094212463, 0.0072844866211142075, 0.0015113333205996316, -0.011281003233671358, -0.006712279079023681, 0.007454047607253493  …  -0.008560555645040935, -0.0009246495682439206, -0.002882588217415678, 0.005024753641084912, 0.0014807368499568049, -0.00038585441415452137, -0.000792496232822748, 0.0019746551544632665, -0.004531172402756976, -0.0026734658178187744], IdentityUpdateRule(), StopWhenAny{Tuple{StopAfterIteration,StopWhenGradientNormLess}}((StopAfterIteration(200, &quot;&quot;), StopWhenGradientNormLess(1.0e-8, &quot;The algorithm reached approximately critical point after 20 iterations; the gradient norm (3.856776202540161e-9) is less than 1.0e-8.\n&quot;)), &quot;The algorithm reached approximately critical point after 20 iterations; the gradient norm (3.856776202540161e-9) is less than 1.0e-8.\n&quot;), ConstantStepsize(1.0), [-3.933077346880004e-10, -4.3171833343208076e-11, 6.56732853862585e-11, -1.5759354289753523e-10, 8.464979115222865e-10, -7.668974285907765e-10, -2.0538018128627572e-10, 1.900122719621566e-10, -1.4441114040805898e-9, 5.516133830632021e-10  …  3.412740687581419e-10, 7.649628380821533e-11, -3.992971282394328e-10, -2.58712254612816e-9, 2.6960121234011897e-10, -6.873708650878552e-10, -2.3091756615580342e-11, 2.5162697842246243e-10, -2.967947426452816e-11, 2.003055126278963e-10], ExponentialRetraction()), (Iteration = RecordGroup(RecordAction[RecordIteration([1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20]), Main.ex-HowToRecord.RecordCount([0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19]), RecordCost([0.5467764136711742, 0.536496662070443, 0.5349809370338188, 0.5347588107780821, 0.5347262771824008, 0.5347215112273678, 0.5347208128443974, 0.5347207104761789, 0.5347206954668047, 0.5347206932654798, 0.5347206929425345, 0.534720692895144, 0.5347206928881875, 0.5347206928871665, 0.5347206928870166, 0.5347206928869943, 0.5347206928869911, 0.5347206928869905, 0.5347206928869904, 0.5347206928869904])], Dict(:Iteration =&gt; 1,:Count =&gt; 2,:Cost =&gt; 3)),))</code></pre><p>We can again access the whole sets of records</p><pre><code class="language-julia">get_record(R)</code></pre><pre><code class="language-none">20-element Array{Tuple{Int64,Int64,Float64},1}:
  (1, 0, 0.5467764136711742)
  (2, 1, 0.536496662070443)
  (3, 2, 0.5349809370338188)
@@ -158,4 +157,24 @@ get_record(R)</code></pre><pre><code class="language-none">20-element Array{Tupl
  (17, 16, 0.5347206928869911)
  (18, 17, 0.5347206928869905)
  (19, 18, 0.5347206928869904)
- (20, 19, 0.5347206928869904)</code></pre></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="Benchmark.html">« speed up! using <code>gradF!</code></a><a class="docs-footer-nextpage" href="StochasticGradientDescent.html">do stochastic gradient descent »</a></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> on <span class="colophon-date" title="Friday 2 April 2021 09:35">Friday 2 April 2021</span>. Using Julia version 1.4.2.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>
+ (20, 19, 0.5347206928869904)</code></pre><p>this is equivalent to calling <code>R[:Iteration</code>. Note that since we introduced <code>:Count</code> we can also access a single recorded value using</p><pre><code class="language-julia">R[:Iteration, :Count]</code></pre><pre><code class="language-none">20-element Array{Int64,1}:
+  0
+  1
+  2
+  3
+  4
+  5
+  6
+  7
+  8
+  9
+ 10
+ 11
+ 12
+ 13
+ 14
+ 15
+ 16
+ 17
+ 18
+ 19</code></pre></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="Benchmark.html">« speed up! using <code>gradF!</code></a><a class="docs-footer-nextpage" href="StochasticGradientDescent.html">do stochastic gradient descent »</a></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> on <span class="colophon-date" title="Friday 2 April 2021 10:24">Friday 2 April 2021</span>. Using Julia version 1.4.2.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>
