@@ -11,21 +11,14 @@ Random.seed!(42)
 n = 7
 highlighted = 4
 (highlighted &gt; n - 1) &amp;&amp; error(
-    &quot;Please choose a highlighted point from {1,...,$(n-1)} (excluding the last data point) – you set it to $highlighted.&quot;,
+    &quot;Please choose a highlighted point from {1,...,$(n-1)} – you set it to $highlighted.&quot;,
 )
 σ = π / 8
 S = Sphere(2)
 base = 1 / sqrt(2) * [1.0, 0.0, 1.0]
 dir = [-0.75, 0.5, 0.75]
 data = [exp(S, base, dir, t) for t in range(-0.5, 0.5; length=n)]
-data = map(x -&gt; exp(S, x, random_tangent(S, x, :Gaussian, σ)), data)</code></pre><pre><code class="language-none">7-element Array{Array{Float64,1},1}:
- [0.8536738929290659, -0.4407611171876911, 0.2774356179490873]
- [0.8885045017775136, 0.456669526292221, 0.04486305915929584]
- [0.9883816355291073, -0.06123674287166616, -0.13911076116273724]
- [0.7807903227505065, 0.40880133584733314, 0.47249120595900573]
- [0.5196380089577344, 0.6019588838000035, 0.6063182677939826]
- [0.30442591317890266, 0.5172990201008878, 0.7998290987378815]
- [0.4778114450918684, -0.008444328502415777, 0.8784218327519892]</code></pre><p>which looks as follows (using <a href="../helpers/exports.html#Manopt.asymptote_export_S2_signals-Tuple{String}"><code>asymptote_export_S2_signals</code></a>)</p><pre><code class="language-julia">asymptote_export_S2_signals(&quot;regression_data.asy&quot;;
+data = map(x -&gt; exp(S, x, random_tangent(S, x, :Gaussian, σ)), data)</code></pre><p>which looks as follows (using <a href="../helpers/exports.html#Manopt.asymptote_export_S2_signals-Tuple{String}"><code>asymptote_export_S2_signals</code></a>)</p><pre><code class="language-julia">asymptote_export_S2_signals(&quot;regression_data.asy&quot;;
     points = [ [x], data],
     colors=Dict(:points =&gt; [TolVibrantBlue, TolVibrantTeal]),
     dot_size = 3.5, camera_position = (1.,.5,.5)
@@ -49,7 +42,7 @@ struct RegressionGradient!{T,S}
     data::T
     times::S
 end
-RegressionGradient(data::T, times::S) where {T,S} = RegressionGradient!{T,S}(data, times)
+RegressionGradient!(data::T, times::S) where {T,S} = RegressionGradient!{T,S}(data, times)
 function (a::RegressionGradient!)(M, Y, x)
     pts = [geodesic(M.manifold, x[M, :point], x[M, :vector], ti) for ti in a.times]
     gradients = grad_distance.(Ref(M.manifold), a.data, pts)
@@ -99,8 +92,10 @@ x0 = ProductRepr(m, pca1)</code></pre><pre><code class="language-none">ProductRe
     stepsize=ArmijoLinesearch(1.0, ExponentialRetraction(), 0.95, 0.1),
     stopping_criterion=StopAfterIteration(100) | StopWhenGradientNormLess(1e-8),
     debug=[:Iteration, &quot; | &quot;, :Cost, &quot;\n&quot;, :Stop, 50],
-)
-dense_t = range(-0.5, 0.5; length=100)
+);</code></pre><pre><code class="language-none">Initial | F(x): 0.35516282500242574
+# 50 | F(x): 0.3550574867946705
+# 100 | F(x): 0.3550574867946705
+The algorithm reached its maximal number of iterations (100).</code></pre><p>And plot the result</p><pre><code class="language-julia">dense_t = range(-0.5, 0.5; length=100)
 geo = geodesic(S, y[M, :point], y[M, :vector], dense_t)
 init_geo = geodesic(S, x0[M, :point], x0[M, :vector], dense_t)
 geo_pts = geodesic(S, y[M, :point], y[M, :vector], t)
@@ -171,4 +166,64 @@ y2 = gradient_descent(
   3-element Array{Float64,1}:
     0.48356421167664626
    -0.6782214068234557
-   -0.6091989192785306</code></pre><p><img src="../assets/images/tutorials/regression_result2.png" alt="The result from doing a gradient descent on the tangent bundle, unevenspaced noisy data"/></p><h2 id="unlabeled-data-regression-1"><a class="docs-heading-anchor" href="#unlabeled-data-regression-1">Unlabeled data</a><a class="docs-heading-anchor-permalink" href="#unlabeled-data-regression-1" title="Permalink"></a></h2><p>If we are not given time points <span>$t_i$</span>, then the optimization problem extends – informally speaking – to also finding the “best fitting” (in the sense of smallest error). To formalize, the objective function here reads</p><div>\[F(p, X, t) = \frac{1}{2}\sum_{i=1}^n d_{\mathcal M}^2(γ_{p,X}(t_i), d_i),\]</div><p>where <span>$t = (t_1,\ldots,t_n) \in \mathbb R^n$</span> is now an additional parameter of the objective function.</p><p>For the Euclidean case, there is no neccessity to optimize with respect to <span>$t$</span>, as we saw above for the initialisation of the fixed time points.</p><p>On a Riemannian manifold this can be stated as a problem on the product manifold <span>$\mathcal N = \mathrm{T}\mathcal M \times \mathbb R^n$</span>, i.e.</p><div>\[  \operatorname*{arg\,min}_{\bigl((p,X),t\bigr)\in\mathcal N} F(p, X, t).\]</div><p>In this tutorial we present an approach to solve this using an alternating gradient descent scheme.</p><section class="footnotes is-size-7"><ul><li class="footnote" id="footnote-BergmannGousenbourger2018"><a class="tag is-link" href="#citeref-BergmannGousenbourger2018">BergmannGousenbourger2018</a><blockquote><p>Bergmann, R. and Gousenbourger, P.-Y.: <em>A variational model for data fitting on manifolds by minimizing the acceleration of a Bézier curve</em>. Frontiers in Applied Mathematics and Statistics, 2018. doi: <a href="https://dx.doi.org/10.3389/fams.2018.00059">10.3389/fams.2018.00059</a>, arXiv: <a href="https://arxiv.org/abs/1807.10090">1807.10090</a></p></blockquote></li><li class="footnote" id="footnote-Fletcher2013"><a class="tag is-link" href="#citeref-Fletcher2013">Fletcher2013</a><blockquote><p>Fletcher, P. T., <em>Geodesic regression and the theory of least squares on Riemannian manifolds</em>, International Journal of Computer Vision(105), 2, pp. 171–185, 2013. doi: <a href="https://doi.org/10.1007/s11263-012-0591-y">10.1007/s11263-012-0591-y</a></p></blockquote></li></ul></section></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="Benchmark.html">« speed up! using <code>gradF!</code></a><a class="docs-footer-nextpage" href="HowToRecord.html">Record values »</a></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> on <span class="colophon-date" title="Friday 23 April 2021 16:18">Friday 23 April 2021</span>. Using Julia version 1.4.2.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>
+   -0.6091989192785306</code></pre><p><img src="../assets/images/tutorials/regression_result2.png" alt="The result from doing a gradient descent on the tangent bundle, unevenspaced noisy data"/></p><h2 id="unlabeled-data-regression-1"><a class="docs-heading-anchor" href="#unlabeled-data-regression-1">Unlabeled data</a><a class="docs-heading-anchor-permalink" href="#unlabeled-data-regression-1" title="Permalink"></a></h2><p>If we are not given time points <span>$t_i$</span>, then the optimization problem extends – informally speaking – to also finding the “best fitting” (in the sense of smallest error). To formalize, the objective function here reads</p><div>\[F(p, X, t) = \frac{1}{2}\sum_{i=1}^n d_{\mathcal M}^2(γ_{p,X}(t_i), d_i),\]</div><p>where <span>$t = (t_1,\ldots,t_n) \in \mathbb R^n$</span> is now an additional parameter of the objective function. We write <span>$F_1(p, X)$</span> to refer to the function on the tangent bundle for fixed values of <span>$t$</span> (as the one in the last part) and <span>$F_2(t)$</span> for the function <span>$F(p, X, t)$</span> as a function in <span>$t$</span> with fixed values <span>$(p, X)$</span>.</p><p>For the Euclidean case, there is no neccessity to optimize with respect to <span>$t$</span>, as we saw above for the initialisation of the fixed time points.</p><p>On a Riemannian manifold this can be stated as a problem on the product manifold <span>$\mathcal N = \mathrm{T}\mathcal M \times \mathbb R^n$</span>, i.e.</p><pre><code class="language-julia">N = M × Euclidean(length(t2))</code></pre><pre><code class="language-none">ProductManifold with 2 submanifolds:
+ TangentBundle(Sphere(2, ℝ))
+ Euclidean(6; field = ℝ)</code></pre><div>\[  \operatorname*{arg\,min}_{\bigl((p,X),t\bigr)\in\mathcal N} F(p, X, t).\]</div><p>In this tutorial we present an approach to solve this using an alternating gradient descent scheme. To be precise, we define the cost funcion now on the product manifold</p><pre><code class="language-julia">struct RegressionCost2{T}
+    data::T
+end
+RegressionCost2(data::T) where {T} = RegressionCost2{T}(data)
+function (a::RegressionCost2)(N, x)
+    TM = N[1]
+    pts = [
+        geodesic(TM.manifold, x[N, 1][TM, :point], x[N, 1][TM, :vector], ti) for
+        ti in x[N, 2]
+    ]
+    return 1 / 2 * sum(distance.(Ref(TM.manifold), pts, a.data) .^ 2)
+end</code></pre><p>The gradient in two parts, namely (a) the same gradient as before w.r.t. <span>$(p,X) ∈ T\mathcal M$</span> just now with a fixed <code>t</code> in mind for the second component of the product manifold <span>$\mathcal N$</span></p><pre><code class="language-julia">struct RegressionGradient2a!{T}
+    data::T
+end
+RegressionGradient2a!(data::T) where {T} = RegressionGradient2a!{T}(data)
+function (a::RegressionGradient2a!)(N, Y, x)
+    TM = N[1]
+    p = x[N, 1]
+    X = Y[N, 1]
+    pts = [geodesic(TM.manifold, p[TM, :point], p[TM, :vector], ti) for ti in x[N, 2]]
+    gradients = grad_distance.(Ref(TM.manifold), a.data, pts)
+    X[TM, :point] .= sum(
+        adjoint_differential_exp_basepoint.(
+            Ref(TM.manifold),
+            Ref(p[TM, :point]),
+            [ti * p[TM, :vector] for ti ∈ x[N, 2]],
+            gradients,
+        ),
+    )
+    X[TM, :vector] .= sum(
+        adjoint_differential_exp_argument.(
+            Ref(TM.manifold),
+            Ref(p[TM, :point]),
+            [ti * p[TM, :vector] for ti ∈ x[N, 2]],
+            gradients,
+        ),
+    )
+    return Y
+end</code></pre><p>Finally we addionally look for a fixed point <span>$x=(p,X) ∈ \mathrm{T}\mathcal M$</span> at the gradient with respect to <span>$t∈\mathbb R^n$</span>, i.e. the second component, which is given by</p><div>\[  (\operatorname{grad}F_2(t))_i
+  = - ⟨\dot γ_{p,X}(t_i), \log_{γ_{p,X}(t_i)}d_i⟩_{γ_{p,X}(t_i)}, i = 1, \ldots, n.\]</div><pre><code class="language-julia">struct RegressionGradient2b!{T}
+    data::T
+end
+RegressionGradient2b!(data::T) where {T} = RegressionGradient2b!{T}(data)
+function (a::RegressionGradient2b!)(N, Y, x)
+    TM = N[1]
+    p = x[N, 1]
+    pts = [geodesic(TM.manifold, p[TM, :point], p[TM, :vector], ti) for ti in x[N, 2]]
+    logs = log.(Ref(TM.manifold), pts, a.data)
+    pt = map(d -&gt; vector_transport_to(TM.manifold, p[TM, :point], p[TM, :vector], d), pts)
+    Y[N, 2] .= -inner.(Ref(TM.manifold), pts, logs, pt)
+    return Y
+end</code></pre><p>We can reuse the computed initial values from before, just that now we are on a product manifold</p><pre><code class="language-">x2 = ProductRepr(x1, t2)
+F3 = RegressionCost2(data2)
+gradF3_vector = [RegressionGradient2a!(data2), RegressionGradient2b!(data2)]
+y3 = alternating_gradient_descent(
+    N, F3, gradF3_vector, x2;
+    evaluation = MutatingEvaluation(),
+    debug=[:Iteration, &quot; | &quot;, :Cost, &quot;\n&quot;, :Stop, 1],
+)</code></pre><section class="footnotes is-size-7"><ul><li class="footnote" id="footnote-BergmannGousenbourger2018"><a class="tag is-link" href="#citeref-BergmannGousenbourger2018">BergmannGousenbourger2018</a><blockquote><p>Bergmann, R. and Gousenbourger, P.-Y.: <em>A variational model for data fitting on manifolds by minimizing the acceleration of a Bézier curve</em>. Frontiers in Applied Mathematics and Statistics, 2018. doi: <a href="https://dx.doi.org/10.3389/fams.2018.00059">10.3389/fams.2018.00059</a>, arXiv: <a href="https://arxiv.org/abs/1807.10090">1807.10090</a></p></blockquote></li><li class="footnote" id="footnote-Fletcher2013"><a class="tag is-link" href="#citeref-Fletcher2013">Fletcher2013</a><blockquote><p>Fletcher, P. T., <em>Geodesic regression and the theory of least squares on Riemannian manifolds</em>, International Journal of Computer Vision(105), 2, pp. 171–185, 2013. doi: <a href="https://doi.org/10.1007/s11263-012-0591-y">10.1007/s11263-012-0591-y</a></p></blockquote></li></ul></section></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="Benchmark.html">« speed up! using <code>gradF!</code></a><a class="docs-footer-nextpage" href="HowToRecord.html">Record values »</a></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> on <span class="colophon-date" title="Saturday 24 April 2021 15:43">Saturday 24 April 2021</span>. Using Julia version 1.4.2.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>
