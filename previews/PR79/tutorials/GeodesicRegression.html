@@ -166,10 +166,9 @@ RegressionGradient2a!(data::T) where {T} = RegressionGradient2a!{T}(data)
 function (a::RegressionGradient2a!)(N, Y, x)
     TM = N[1]
     p = x[N, 1]
-    X = Y[N, 1]
     pts = [geodesic(TM.manifold, p[TM, :point], p[TM, :vector], ti) for ti in x[N, 2]]
     gradients = grad_distance.(Ref(TM.manifold), a.data, pts)
-    X[TM, :point] .= sum(
+    Y[TM, :point] .= sum(
         adjoint_differential_exp_basepoint.(
             Ref(TM.manifold),
             Ref(p[TM, :point]),
@@ -177,7 +176,7 @@ function (a::RegressionGradient2a!)(N, Y, x)
             gradients,
         ),
     )
-    X[TM, :vector] .= sum(
+    Y[TM, :vector] .= sum(
         adjoint_differential_exp_argument.(
             Ref(TM.manifold),
             Ref(p[TM, :point]),
@@ -197,9 +196,9 @@ function (a::RegressionGradient2b!)(N, Y, x)
     pts = [geodesic(TM.manifold, p[TM, :point], p[TM, :vector], ti) for ti in x[N, 2]]
     logs = log.(Ref(TM.manifold), pts, a.data)
     pt = map(d -&gt; vector_transport_to(TM.manifold, p[TM, :point], p[TM, :vector], d), pts)
-    Y[N, 2] .= -inner.(Ref(TM.manifold), pts, logs, pt)
+    Y .= -inner.(Ref(TM.manifold), pts, logs, pt)
     return Y
-end</code></pre><p>We can reuse the computed initial values from before, just that now we are on a product manifold</p><pre><code class="language-">x2 = ProductRepr(x1, t2)
+end</code></pre><p>We can reuse the computed initial values from before, just that now we are on a product manifold</p><pre><code class="language-julia">x2 = ProductRepr(x1, t2)
 F3 = RegressionCost2(data2)
 gradF3_vector = [RegressionGradient2a!(data2), RegressionGradient2b!(data2)]
 y3 = alternating_gradient_descent(
@@ -211,8 +210,10 @@ y3 = alternating_gradient_descent(
     debug=[:Iteration, &quot; | &quot;, :Cost, &quot;\n&quot;, :Stop, 50],
     stepsize=ArmijoLinesearch(),
     inner_iterations=1,
-)
-nothing #hide</code></pre><p><img src="../assets/images/tutorials/regression_result3.png" alt="The result from doing a gradient descent on the tangent bundle, unevenspaced noisy data"/></p><p>And now we indeed obtain looking at the points on the geodesic</p><pre><code class="language-">p3 = y3[N, 1][M, :point]
+)</code></pre><pre><code class="language-none">Initial | F(x): 0.298824643935718
+# 50 | F(x): 0.082649476343161
+# 100 | F(x): 0.082649476343161
+The algorithm reached its maximal number of iterations (100).</code></pre><p><img src="../assets/images/tutorials/regression_result3.png" alt="The result from doing a gradient descent on the tangent bundle, unevenspaced noisy data"/></p><p>And now we indeed obtain looking at the points on the geodesic</p><pre><code class="language-julia">p3 = y3[N, 1][M, :point]
 X3 = y3[N, 1][M, :vector]
 t3 = y3[N, 2]
 geo_pts3 = geodesic(S, p3, X3, t3)
@@ -221,4 +222,10 @@ inner.(
     geo_pts3,
     map(p -&gt; vector_transport_to(S, p3, X3, p), geo_pts3),
     log.(Ref(S), geo_pts3, data2),
-)</code></pre><section class="footnotes is-size-7"><ul><li class="footnote" id="footnote-BergmannGousenbourger2018"><a class="tag is-link" href="#citeref-BergmannGousenbourger2018">BergmannGousenbourger2018</a><blockquote><p>Bergmann, R. and Gousenbourger, P.-Y.: <em>A variational model for data fitting on manifolds by minimizing the acceleration of a Bézier curve</em>. Frontiers in Applied Mathematics and Statistics, 2018. doi: <a href="https://dx.doi.org/10.3389/fams.2018.00059">10.3389/fams.2018.00059</a>, arXiv: <a href="https://arxiv.org/abs/1807.10090">1807.10090</a></p></blockquote></li><li class="footnote" id="footnote-Fletcher2013"><a class="tag is-link" href="#citeref-Fletcher2013">Fletcher2013</a><blockquote><p>Fletcher, P. T., <em>Geodesic regression and the theory of least squares on Riemannian manifolds</em>, International Journal of Computer Vision(105), 2, pp. 171–185, 2013. doi: <a href="https://doi.org/10.1007/s11263-012-0591-y">10.1007/s11263-012-0591-y</a></p></blockquote></li></ul></section></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="Benchmark.html">« speed up! using <code>gradF!</code></a><a class="docs-footer-nextpage" href="HowToRecord.html">Record values »</a></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> on <span class="colophon-date" title="Sunday 25 April 2021 11:19">Sunday 25 April 2021</span>. Using Julia version 1.4.2.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>
+)</code></pre><pre><code class="language-none">6-element Array{Float64,1}:
+  0.011857412701587494
+  0.012436215496269167
+  0.014152543342840072
+  0.0008144867841865279
+ -0.0025463480125791776
+  0.00604437361868176</code></pre><section class="footnotes is-size-7"><ul><li class="footnote" id="footnote-BergmannGousenbourger2018"><a class="tag is-link" href="#citeref-BergmannGousenbourger2018">BergmannGousenbourger2018</a><blockquote><p>Bergmann, R. and Gousenbourger, P.-Y.: <em>A variational model for data fitting on manifolds by minimizing the acceleration of a Bézier curve</em>. Frontiers in Applied Mathematics and Statistics, 2018. doi: <a href="https://dx.doi.org/10.3389/fams.2018.00059">10.3389/fams.2018.00059</a>, arXiv: <a href="https://arxiv.org/abs/1807.10090">1807.10090</a></p></blockquote></li><li class="footnote" id="footnote-Fletcher2013"><a class="tag is-link" href="#citeref-Fletcher2013">Fletcher2013</a><blockquote><p>Fletcher, P. T., <em>Geodesic regression and the theory of least squares on Riemannian manifolds</em>, International Journal of Computer Vision(105), 2, pp. 171–185, 2013. doi: <a href="https://doi.org/10.1007/s11263-012-0591-y">10.1007/s11263-012-0591-y</a></p></blockquote></li></ul></section></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="Benchmark.html">« speed up! using <code>gradF!</code></a><a class="docs-footer-nextpage" href="HowToRecord.html">Record values »</a></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> on <span class="colophon-date" title="Sunday 25 April 2021 17:27">Sunday 25 April 2021</span>. Using Julia version 1.4.2.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>
