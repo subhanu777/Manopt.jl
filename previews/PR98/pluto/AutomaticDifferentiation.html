@@ -27,19 +27,6 @@ div.markdown {
 <p>Let&#39;s first load all packages we need.</p>
 </div>
 
-<pre><code class="language-julia">begin
-    using Pkg: Pkg
-    Pkg.activate(mktempdir())
-    Pkg.add([
-        Pkg.PackageSpec(; name="Manifolds", version="0.7"),
-        Pkg.PackageSpec(; name="Manopt", version="0.3"),
-        Pkg.PackageSpec(; name="FiniteDiff", version="2.8"),
-        Pkg.PackageSpec(; name="ReverseDiff", version="1.9"),
-        # Pkg.PackageSpec(; name="PlutoUI"),
-    ])
-end</code></pre>
-
-
 <pre><code class="language-julia">using Manifolds, Manopt, Random, LinearAlgebra</code></pre>
 
 
@@ -252,19 +239,4 @@ end</code></pre>
 <div class="markdown"><h2>Summary</h2>
 <p>This tutorial illustrates how to use tools from Euclidean spaces, finite differences or automatic differentiation, to compute gradients on Riemannian manifolds. The scheme allows to use <em>any</em> differentiation framework within the embedding to derive a Riemannian gradient.</p>
 </div>
-
-<script>
-require(['jquery', 'katex', 'katex-auto-render'], function($, katex, renderMathInElement) {
-    $(document).ready(function() {
-        renderMathInElement(document.body);
-        /* Apparently, Pluto wraps LaTeX inside a span class 'tex'. */
-        var equations = $('p.tex');
-        for (var i = 0; i < equations.length; i++) {
-            var text = equations[i].textContent;
-            text = text.split('$').join('');
-            console.log(text);
-            render(text, equations[i]);
-        }
-    })
-})
-</script></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../tutorials/JacobiFields.html">« use Jacobi Fields</a><a class="docs-footer-nextpage" href="../plans/index.html">Plans »</a></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> on <span class="colophon-date" title="Wednesday 1 December 2021 10:17">Wednesday 1 December 2021</span>. Using Julia version 1.6.4.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>
+</article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../tutorials/JacobiFields.html">« use Jacobi Fields</a><a class="docs-footer-nextpage" href="../plans/index.html">Plans »</a></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> on <span class="colophon-date" title="Wednesday 1 December 2021 10:35">Wednesday 1 December 2021</span>. Using Julia version 1.6.4.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>
