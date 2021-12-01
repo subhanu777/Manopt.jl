@@ -240,23 +240,18 @@ end</code></pre>
 <p>This tutorial illustrates how to use tools from Euclidean spaces, finite differences or automatic differentiation, to compute gradients on Riemannian manifolds. The scheme allows to use <em>any</em> differentiation framework within the embedding to derive a Riemannian gradient.</p>
 </div>
 
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.15.1/dist/katex.min.css" integrity="sha384-R4558gYOUz8mP9YWpZJjofhk+zx0AS11p36HnD2ZKj/6JR5z27gSSULCNHIRReVs" crossorigin="anonymous">
-<!-- The loading of KaTeX is deferred to speed up page rendering -->
-<script defer src="https://cdn.jsdelivr.net/npm/katex@0.15.1/dist/katex.min.js" integrity="sha384-z1fJDqw8ZApjGO3/unPWUPsIymfsJmyrDVWC8Tv/a1HeOtGmkwNd/7xUS0Xcnvsx" crossorigin="anonymous"></script>
-<!-- To automatically render math in text elements, include the auto-render extension: -->
-<script defer src="https://cdn.jsdelivr.net/npm/katex@0.15.1/dist/contrib/auto-render.min.js" integrity="sha384-+XBljXPPiv+OzfbB3cVmLHf4hdUFHlWNZN5spNQ7rmHTXpd7WvJum6fIACpNNfIR" crossorigin="anonymous" onload="renderMathInElement(document.body);"></script>
 <script>
-    const options = {
-        delimiters: [
-            {left: "$$", right: "$$", display: true},
-            {left: "$", right: "$", display: false},
-            {left: "\begin{equation}", right: "\end{equation}", display: true},
-            {left: "\begin{align}", right: "\end{align}", display: true},
-            {left: "\begin{alignat}", right: "\end{alignat}", display: true},
-            {left: "\begin{gather}", right: "\end{gather}", display: true},
-            {left: "\(", right: "\)", display: false},
-            {left: "\[", right: "\]", display: true}
-        ]
-    };
-    renderMathInElement(document.body, options);
-</script></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../tutorials/JacobiFields.html">« use Jacobi Fields</a><a class="docs-footer-nextpage" href="../plans/index.html">Plans »</a></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> on <span class="colophon-date" title="Wednesday 1 December 2021 16:43">Wednesday 1 December 2021</span>. Using Julia version 1.7.0.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>
+require(['jquery', 'katex', 'katex-auto-render'], function($, katex, renderMathInElement) {
+    $(document).ready(function() {
+        renderMathInElement(document.body);
+        /* Apparently, Pluto wraps LaTeX inside a span class 'tex'. */
+        var equations = $('p.tex');
+        for (var i = 0; i < equations.length; i++) {
+            var text = equations[i].textContent;
+            text = text.split('$').join('');
+            console.log(text);
+            render(text, equations[i]);
+        }
+    })
+})
+</script></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../tutorials/JacobiFields.html">« use Jacobi Fields</a><a class="docs-footer-nextpage" href="../plans/index.html">Plans »</a></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> on <span class="colophon-date" title="Wednesday 1 December 2021 17:32">Wednesday 1 December 2021</span>. Using Julia version 1.7.0.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>
