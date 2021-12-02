@@ -24,14 +24,14 @@ body .content pre.pre-output {
 
 
 <pre><code class="language-julia">begin
-	Random.seed!(42)
-	m = 30
-	M = Sphere(m)
-	n = 800
-	σ = π / 8
-	x = zeros(Float64, m + 1)
-	x[2] = 1.0
-	data = [exp(M, x, random_tangent(M, x, Val(:Gaussian), σ)) for i in 1:n]
+    Random.seed!(42)
+    m = 30
+    M = Sphere(m)
+    n = 800
+    σ = π / 8
+    x = zeros(Float64, m + 1)
+    x[2] = 1.0
+    data = [exp(M, x, random_tangent(M, x, Val(:Gaussian), σ)) for i in 1:n]
 end;</code></pre>
 
 
@@ -51,20 +51,20 @@ end;</code></pre>
 </div>
 
 <pre><code class="language-julia">begin
-	sc = StopWhenGradientNormLess(1e-10)
-	x0 = random_point(M)
-	m1 = gradient_descent(M, F, gradF, x0; stopping_criterion=sc)
+    sc = StopWhenGradientNormLess(1e-10)
+    x0 = random_point(M)
+    m1 = gradient_descent(M, F, gradF, x0; stopping_criterion=sc)
 
-	@benchmark gradient_descent($M, $F, $gradF, $x0; stopping_criterion=$sc)
+    @benchmark gradient_descent($M, $F, $gradF, $x0; stopping_criterion=$sc)
 end</code></pre>
-<pre><code class="code-output">BenchmarkTools.Trial: 315 samples with 1 evaluation.
- Range (min … max):  13.873 ms … 28.441 ms  ┊ GC (min … max):  0.00% … 0.00%
- Time  (median):     16.336 ms              ┊ GC (median):    13.62%
- Time  (mean ± σ):   15.863 ms ±  1.693 ms  ┊ GC (mean ± σ):   8.45% ± 6.82%
+<pre><code class="code-output">BenchmarkTools.Trial: 282 samples with 1 evaluation.
+ Range (min … max):  14.407 ms … 32.192 ms  ┊ GC (min … max):  0.00% … 0.00%
+ Time  (median):     18.237 ms              ┊ GC (median):    14.05%
+ Time  (mean ± σ):   17.753 ms ±  2.005 ms  ┊ GC (mean ± σ):   9.04% ± 7.27%
 
-  ▇▆              ▇█▄                                          
-  ███▅▄▃▃▃▃▁▃▃▂▃▂▆███▆▇▄▄▃▂▃▁▃▃▂▂▁▂▁▁▂▁▂▁▁▁▁▁▂▁▁▁▁▁▁▁▁▁▁▁▁▁▁▂ ▃
-  13.9 ms         Histogram: frequency by time        22.7 ms <
+        ▁  ▃▃▂                ▅ █▁ ▅▂▁                         
+  ▃▁▁▃▃▇██████▆▇▅▅▃▄▅▃▃▃▃▃▃▅▅▇████████▅▄█▅▆▃▄▁▁▃▃▁▃▁▃▁▁▁▁▁▁▁▃ ▃
+  14.4 ms         Histogram: frequency by time        22.4 ms <
 
  Memory estimate: 25.45 MiB, allocs estimate: 87592.</code></pre>
 
@@ -75,19 +75,19 @@ end</code></pre>
 </div>
 
 <pre><code class="language-julia">begin
-	struct grad!{TD,TTMP}
-    	data::TD
-    	tmp::TTMP
-	end
-	function (gradf!::grad!)(M, X, x)
-    fill!(X, 0)
-    for di in gradf!.data
-        grad_distance!(M, gradf!.tmp, di, x)
-        X .+= gradf!.tmp
+    struct grad!{TD,TTMP}
+        data::TD
+        tmp::TTMP
     end
-    X ./= length(gradf!.data)
-    return X
-	end
+    function (gradf!::grad!)(M, X, x)
+        fill!(X, 0)
+        for di in gradf!.data
+            grad_distance!(M, gradf!.tmp, di, x)
+            X .+= gradf!.tmp
+        end
+        X ./= length(gradf!.data)
+        return X
+    end
 end</code></pre>
 
 
@@ -96,22 +96,24 @@ end</code></pre>
 </div>
 
 <pre><code class="language-julia">begin
-	gradF2! = grad!(data, similar(data[1]))
-	m2 = deepcopy(x0)
-	gradient_descent!(M, F, gradF2!, m2; evaluation=MutatingEvaluation(), stopping_criterion=sc)
+    gradF2! = grad!(data, similar(data[1]))
+    m2 = deepcopy(x0)
+    gradient_descent!(
+        M, F, gradF2!, m2; evaluation=MutatingEvaluation(), stopping_criterion=sc
+    )
 
-@benchmark gradient_descent!(
-    $M, $F, $gradF2!, m2; evaluation=$(MutatingEvaluation()), stopping_criterion=$sc
-) setup = (m2 = deepcopy($x0))
+    @benchmark gradient_descent!(
+        $M, $F, $gradF2!, m2; evaluation=$(MutatingEvaluation()), stopping_criterion=$sc
+    ) setup = (m2 = deepcopy($x0))
 end</code></pre>
-<pre><code class="code-output">BenchmarkTools.Trial: 609 samples with 1 evaluation.
- Range (min … max):  7.905 ms …  16.248 ms  ┊ GC (min … max): 0.00% … 0.00%
- Time  (median):     8.065 ms               ┊ GC (median):    0.00%
- Time  (mean ± σ):   8.201 ms ± 518.451 μs  ┊ GC (mean ± σ):  0.00% ± 0.00%
+<pre><code class="code-output">BenchmarkTools.Trial: 602 samples with 1 evaluation.
+ Range (min … max):  7.859 ms …  13.561 ms  ┊ GC (min … max): 0.00% … 0.00%
+ Time  (median):     8.181 ms               ┊ GC (median):    0.00%
+ Time  (mean ± σ):   8.304 ms ± 499.790 μs  ┊ GC (mean ± σ):  0.00% ± 0.00%
 
-  ▁▆▆█▇▆▄▅▄▃▂▂                                                 
-  █████████████▅▇▇▅█▇▆█▅▅▆▄▁▇▅▁▁▄▆▄▄▄▁▅▁▁▁▁▁▅▆▄▅▄▅▁▁▄▄▁▄▁▄▁▁▄ █
-  7.9 ms       Histogram: log(frequency) by time      9.91 ms <
+     ▅█▅▅▅▂▅                                                   
+  ▄▆████████▇█▇▅▆▃▄▃▃▃▃▂▃▃▂▃▂▃▂▂▃▃▁▂▂▂▃▁▁▂▁▂▂▁▂▁▁▃▁▂▁▁▁▂▁▁▁▁▂ ▃
+  7.86 ms         Histogram: frequency by time        10.3 ms <
 
  Memory estimate: 46.20 KiB, allocs estimate: 717.</code></pre>
 
@@ -126,4 +128,4 @@ end</code></pre>
     require({}, ['jquery'], function() {
         $('code.code-output').parent('pre').addClass('pre-output');
     });
-</script></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../../tutorials/JacobiFields/">« use Jacobi Fields</a><a class="docs-footer-nextpage" href="../AutomaticDifferentiation/">AD in Manopt »</a><div class="flexbox-break"></div><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> version 0.27.10 on <span class="colophon-date" title="Thursday 2 December 2021 08:23">Thursday 2 December 2021</span>. Using Julia version 1.7.0.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>
+</script></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../../tutorials/JacobiFields/">« use Jacobi Fields</a><a class="docs-footer-nextpage" href="../AutomaticDifferentiation/">AD in Manopt »</a><div class="flexbox-break"></div><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> version 0.27.10 on <span class="colophon-date" title="Thursday 2 December 2021 08:28">Thursday 2 December 2021</span>. Using Julia version 1.7.0.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>
