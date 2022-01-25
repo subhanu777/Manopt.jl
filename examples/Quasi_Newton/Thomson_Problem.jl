@@ -42,7 +42,6 @@ x = random_point(M)
     gradF,
     x;
     memory_size=100,
-    vector_transport_method=PowerVectorTransport(ParallelTransport()),
     stopping_criterion=StopWhenGradientNormLess(norm(M, x, gradF(M, x)) * 10^(-6)),
     debug=[:Iteration, " ", :Cost, "\n", 1, :Stop],
 )
